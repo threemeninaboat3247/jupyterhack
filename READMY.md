@@ -10,7 +10,7 @@ embedded in PyQt5 windows.
 ## Usage
 
 ```python
-%gui qt <------- necessary when using in Jupyter
+%gui qt ### necessary when using in Jupyter
 from JupyterHuck.MyView import getRoot
 from JupyterHuck.MyGraph import MyGraphWindow
 
