@@ -482,7 +482,6 @@ class MyTreeModel(QStandardItemModel):
         
     def getGraphs(self,item):
         #自身の直下（フォルダは展開しない）のグラフの参照のリストを返す
-        import JupyterHuck5.MyGraph
         ref=self.getRef(item)
         if isinstance(ref,MyTree.MyTree):
             children=ref.getChildren()
