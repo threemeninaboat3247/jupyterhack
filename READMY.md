@@ -24,3 +24,6 @@ graph.plot([1,2,3],[1,2,1])
 r.cur.add(graph)
 
 r.save()
+```
+
+![]()
