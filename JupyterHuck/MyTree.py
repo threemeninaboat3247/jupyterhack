@@ -54,6 +54,7 @@ class MyTreeRaw(dict):
     
 class MyTree(QObject):
     '''Tree構造を実装するクラス　Tree構造の再帰性を利用する'''
+    MASTER='master'
     SPACE='  '
     INDENT='--'
     addSignal=pyqtSignal(list,str,list) #path,label,refの順 最後は参照を入れたいので[ref]とする

@@ -9,11 +9,12 @@ import pickle
 import inspect
 from PyQt5.QtCore import QRect,pyqtSignal,Qt
 from PyQt5.QtWidgets import QFileDialog,QWidget,QPushButton,QSizePolicy,QHBoxLayout,QVBoxLayout,\
-                            QTreeView,QAbstractItemView,QApplication
-from PyQt5.QtGui import QColor,QStandardItem,QStandardItemModel
+                            QTreeView,QAbstractItemView,QApplication,QMainWindow,QToolBar,QAction,QToolButton,QHeaderView,QTextEdit
+from PyQt5.QtGui import QColor,QStandardItem,QStandardItemModel,QFont
 
 import JupyterHuck.MyTree as MyTree
 from JupyterHuck.MyGraph import MyGraphWindow
+from JupyterHuck.Help import helpText
 
 NAME=0
 TYPE=1
@@ -32,7 +33,7 @@ def getRoot():
 def geneMyTreeWidget(view):
     return MyTreeWidget(view=view)
         
-class MyTreeWidget(QWidget):
+class MyTreeWidget(QMainWindow):
     def __init__(self,view=None):
         super().__init__()
         if view==None:
@@ -42,17 +43,30 @@ class MyTreeWidget(QWidget):
         self.cur=self.setview.cur
         self.setview.setmodel.mytree.currentSignal.connect(self.setCurrent)
         
+        self.initUI()
+        
+    def initUI(self):
+        #add Toolbar
+        toolbar=QToolBar()
+        helpAction=QAction('help',self)
+        helpAction.triggered.connect(self.showHelp)
+        toolbar.addAction(helpAction)
+        self.addToolBar(toolbar)
         style='''
+            QToolButton {background-color: rgb(55,62,75);}
+            QToolButton:hover {background-color: rgb(39,105,195)}
+            QToolButton:pressed {background-color: rgb(200,200,200)};
             background-color:rgb(55,62,75);
             border-color: gray;
+            color:rgb(255,255,255);
             '''
         self.setStyleSheet(style)
         
         button_style='''
-                    QPushButton {background-color: white;
+                    QPushButton {background-color: rgb(39,105,195);
                                  border-style: none;
                                  border-radius: 5px;
-                                 font: bold 14px;
+                                 font: bold 18px;
                                  min-width: 5em;
                                  padding: 6px;
                                  }
@@ -74,12 +88,28 @@ class MyTreeWidget(QWidget):
         self.vbox=QVBoxLayout()
         self.vbox.addLayout(bbox)
         self.vbox.addWidget(self.setview)
-        self.setLayout(self.vbox)
-        self.setGeometry(QRect(1, 45, 496, 974))
+        
+        self.centralWidget=QWidget()
+        self.centralWidget.setLayout(self.vbox)
+        self.setCentralWidget(self.centralWidget)
+        self.setGeometry(QRect(1, 45, 499, 974))
+        self.setWindowTitle('MyTreeWidget')
         self.show()
         
     def __reduce_ex__(self,proto):
         return geneMyTreeWidget,(self.setview,)
+    
+    def showHelp(self):
+        try:
+            self.text.showNormal()
+        except:
+            self.text=QTextEdit()
+            self.text.setGeometry(500, 45, 800, 974)
+            self.text.setWindowTitle('Help')
+            self.text.setFont(QFont('TimesNewRoman',12))
+            self.text.setHtml(helpText)
+            self.text.setReadOnly(True)
+            self.text.show()
         
     def save(self,other=False):
         if other: #self.filepath以外の保存先を指定する場合
@@ -109,15 +139,6 @@ class MyTreeView(QTreeView):
         super().__init__()
         self.setDragDropMode(QAbstractItemView.InternalMove)
         self.setSortingEnabled( True )
-#        self.setAlternatingRowColors(True)
-#        self.setStyleSheet("background-color: rgb(55,62,75);alternate-background-color: rgb(44,48,60);\
-#                           color: black;selection-color: yellow;selection-background-color: red;border: 1px solid white;\
-#                           QTreeView::item:selected:active {border: 1px solid blue;}");
-#        style='''
-#            QTreeView::item:hover {border: 1px solid blue;background-color:rgba(116,169,214,100);border-style:none}
-#            QTreeView::item:selected:active{background: rgba(116,169,214,10);border-style:none}
-#            QTreeView::item:selected:!active {background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #6b9be8, stop: 1 #577fbf);border-style:none}
-#            '''
 
         self.expanded.connect(self.showGraphs)
         self.collapsed.connect(self.showGraphs)
@@ -244,6 +265,7 @@ class MyTreeModel(QStandardItemModel):
     pink=QColor(197,133,217)
     white=QColor(255,255,255)
     blue=QColor(97,175,239)
+    black=QColor(0,0,0)
     green=QColor(148,194,115)
     def __init__(self,mytree):
         super().__init__(0,2)
@@ -357,6 +379,13 @@ class MyTreeModel(QStandardItemModel):
                 return False
         else:
             return False
+            
+    def headerData(self,section,orientation,role=Qt.EditRole):
+        if role==Qt.ForegroundRole:
+            result=self.black
+        else:
+            result=super().headerData(section,orientation,role)
+        return result
             
     def getRef(self,item):
         #itemの行のNAMEに対応するmytreeの参照を返す
