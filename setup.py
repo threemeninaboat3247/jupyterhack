@@ -11,7 +11,7 @@ long_description = 'a data browser which has a tree structure'
 
 setup(
     name  = 'JupyterHuck',
-    version = '0.0',
+    version = '0.2',
     description = 'Visualizing data in a tree structure',
     long_description = long_description,
     license = 'MIT',
@@ -20,7 +20,7 @@ setup(
     url = 'https://github.com/threemeninaboat3247/JupyterHuck',
     keywords = 'data browser',
     packages = find_packages(),
-    install_requires = ['PyQt5', 'numpy','scipy','matplotlib','pandas'],
+    install_requires = ['numpy','scipy','matplotlib','pandas'],
     classifiers = [
       'Programming Language :: Python :: 3.5',
       'Intended Audience :: Science/Research',
