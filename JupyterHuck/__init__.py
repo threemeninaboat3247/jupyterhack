@@ -1,4 +1,2 @@
-from PyQt5.QtWidgets import QApplication
-import sys
-
-app=QApplication(sys.argv)
+from JupyterHuck.MyGraph import MyGraphWindow as GraphWindow
+from JupyterHuck.MyView import getRoot

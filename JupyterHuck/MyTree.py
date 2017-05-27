@@ -20,6 +20,16 @@ def transformMyTree(mytree,parent=None):
         else:
             raw[key]=value
     return raw
+
+def transformMyRootTree(mytree,parent=None):
+    #MyTreeをMyTreeRawに変換する pickleのため
+    raw=MyTreeRaw(parent=parent,name=mytree.name)
+    for key,value in mytree.getChildren().items():
+        if isinstance(value,MyTree):
+            raw[key]=transformMyTree(value,raw)
+        else:
+            raw[key]=value
+    return raw
     
 def transformMyTreeRaw(tree,parent=None):
     #MyTreeRawをMyTreeに変換する unpickleのため
@@ -31,16 +41,21 @@ def transformMyTreeRaw(tree,parent=None):
             result.add(ref=value,label=key)
     return result
     
-def transformMyRootTreeRaw(tree,current_path):
+def transformMyRootTreeRaw(tree,current_path,dependencies):
     #MyTreeRawをMyRootTreeに変換する unpickleのため
-    result=MyRootTree(name=tree.name)
-    for key,value in tree.items():
-        if isinstance(value,MyTreeRaw):
-            result.add(ref=transformMyTreeRaw(value,result),label=key)
-        else:
-            result.add(ref=value,label=key)
-    result.setCurrent(current_path)
-    return result
+    try:
+        result=MyRootTree(name=tree.name)
+        for key,value in tree.items():
+            if isinstance(value,MyTreeRaw):
+                result.add(ref=transformMyTreeRaw(value,result),label=key)
+            else:
+                result.add(ref=value,label=key)
+        result.setCurrent(current_path)
+        return result
+    except Exception as e:
+        print(e)
+        print(dependencies)
+        raise Exception('Cannot unpickle the file.You may use a different environment from the one used when pickling. Use a environment satisfies the above requirements')
     
 class MyTreeRaw(dict):
     '''Tree構造を実装するクラス　MyTreeをpickleする時にこれに変換する'''
@@ -51,10 +66,23 @@ class MyTreeRaw(dict):
             super().__init__(myobject)
         self.parent=parent #nodeはroot以外必ず親を持つ
         self.name=name #子の名前はdict型のkey
+#        
+#class MyRootTreeRaw(dict):
+#    '''Convert MyRootTree to a dictionary to avoid recursive error when pickling. Also record package dependencies to show them up when the file is opened in a different environment'''
+#    def __init__(self,parent,myobject=None,name='temp'):
+#        if myobject==None:
+#            super().__init__({})
+#        else:
+#            super().__init__(myobject)
+#        self.parent=parent #nodeはroot以外必ず親を持つ
+#        self.name=name #子の名前はdict型のkey
+#        self.dependencies={}
     
 class MyTree(QObject):
-    '''Tree構造を実装するクラス　Tree構造の再帰性を利用する'''
-    MASTER='master'
+    '''
+    A data folder class that has a tree structure. This class's instance holds children as its attributes and you can access them '.childname'. 
+    Note that you must reimplement getChildren method when you add a new attribute to this class for the above reason.
+    '''
     SPACE='  '
     INDENT='--'
     addSignal=pyqtSignal(list,str,list) #path,label,refの順 最後は参照を入れたいので[ref]とする
@@ -103,11 +131,12 @@ class MyTree(QObject):
         if label==None: #labelを指定していなければ呼び出し時の実引数をlabelとする
             frame = inspect.currentframe()
             stack = inspect.getouterframes(frame)
-            val_name = stack[1].code_context[0].split('(')[1].split(')')[0] #これで実引数の名前を取得できるらしい
+            print(stack[1].code_context[0])
+            val_name = stack[1].code_context[0].split('(')[1].split(')')[0] #これで実引数の名前を取得できるらしい ただし関数内やJupyterのcell内で連続してaddを呼び出すと最後のaddの実引数をlabelにするのでlabel重複のエラーがでる
             label=val_name
             
         if label in self.__dict__.keys():
-            raise Exception('same name already exists')
+            raise Exception('The same name already exists.Or you should call \'add\' method like this \'add(refference,\"name\")\' .')
         if check:
             result=self.checkChildren(ref)
             if result[0]:
@@ -248,7 +277,7 @@ class MyRootTree(MyTree):
     
     def __reduce_ex__(self, proto):
         #pickleのためのメソッド 動的にインスタンス変数を追加するクラスはそのままpickleできない
-        return transformMyRootTreeRaw,(transformMyTree(self),self.current.ascend())
+        return transformMyRootTreeRaw,(transformMyTree(self),self.current.ascend(),self.get_dependencies())
     
     def getChildren(self):
         #子供を{'名前':参照}で返す self.currentも子供以外の要素に加わったのでオーバーライド
@@ -293,13 +322,37 @@ class MyRootTree(MyTree):
             if index>0:
                 start=start.__dict__[label]
         return start
+    
+    def get_dependencies(self):
+        from pkg_resources import get_distribution
+        children=self.runAll()
+        dependencies={}
+        for child in children:
+            try:
+                m_name=child.__module__.split('.',1)[0]
+                version=get_distribution(m_name).version
+                dependencies[m_name]=version
+            except:
+                pass
+        return dependencies
         
 if __name__=='__main__':
-    mytree=MyRootTree(children={'a':1,'b':2,'c':3})
-    folder1=MyTree(children={'1_a':1.1,'1_b':'string','1_c':None})
-    folder2=MyTree(children={'2_a':1.1,'2_b':'string','2_c':None})
-    folder3=MyTree(children={'3_a':1.1,'3_b':'string','3_c':None})
-    folder2.add(folder3)
-    folder1.add(folder2)
-    mytree.add(folder1)
+    import sys
+    import numpy as np
+    import pandas as pd
+    from JupyterHuck.MyGraph import MyGraphWindow
+    app = QApplication([])
+    g=MyGraphWindow()
+    n=np.array([1,2,3])
+    s=pd.Series()
+    a=1
+    b=[1,2,3]
+    mytree=MyRootTree()
+    mytree.add(g)
+    mytree.add(n)
+    mytree.add(s)
+    mytree.add(a)
+    mytree.add(b)
     print(mytree)
+    print(mytree.get_dependencies())
+    sys.exit(app.exec_())

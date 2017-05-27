@@ -22,10 +22,13 @@ TYPE=1
 def getRoot():
     path = QFileDialog.getSaveFileName(None, 'chose save file','root.jh')
     if not path[0]=='': #pyqt5ではtapleの一個めにpathが入っている
+#        root=pickle.load(open(path[0],'rb')) #unpickleできる場合
+#        root.setview.setSavePath(path[0])
         try:
             root=pickle.load(open(path[0],'rb')) #unpickleできる場合
             root.setview.setSavePath(path[0])
-        except:
+        except Exception as e:
+            print(e)
             root=MyTreeWidget()
             root.setview.setSavePath(path[0])
         return root
@@ -418,7 +421,7 @@ class MyTreeModel(QStandardItemModel):
                 if isinstance(item,MyTree.MyTree): #子供がフォルダーの場合
                     folder.addChild(self.convert(item))
                 else: #子供がデータだった場合
-                    data=MyItemList(key,str(type(item)))
+                    data=MyItemList(key,item.__class__.__name__)
                     data[NAME].setDropEnabled(False)
                     folder.addChild(data)
             return folder
@@ -456,7 +459,7 @@ class MyTreeModel(QStandardItemModel):
         if isinstance(target,MyTree.MyTree): #子供がフォルダーの場合
             parent.appendRow(self.convert(target))
         else: #子供がデータだった場合
-            data=MyItemList(label,str(type(target)))
+            data=MyItemList(label,target.__class__.__name__)
             data[NAME].setDropEnabled(False)
             parent.appendRow(data)
         self.dataChanged.emit(self.indexFromItem(parent),self.indexFromItem(parent))
