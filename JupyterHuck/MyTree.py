@@ -131,7 +131,6 @@ class MyTree(QObject):
         if label==None: #labelを指定していなければ呼び出し時の実引数をlabelとする
             frame = inspect.currentframe()
             stack = inspect.getouterframes(frame)
-            print(stack[1].code_context[0])
             val_name = stack[1].code_context[0].split('(')[1].split(')')[0] #これで実引数の名前を取得できるらしい ただし関数内やJupyterのcell内で連続してaddを呼び出すと最後のaddの実引数をlabelにするのでlabel重複のエラーがでる
             label=val_name
             
