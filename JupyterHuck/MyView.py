@@ -20,17 +20,30 @@ NAME=0
 TYPE=1
 
 def getRoot():
-    path = QFileDialog.getSaveFileName(None, 'chose save file','root.jh')
-    if not path[0]=='': #pyqt5ではtapleの一個めにpathが入っている
-#        root=pickle.load(open(path[0],'rb')) #unpickleできる場合
-#        root.setview.setSavePath(path[0])
-        try:
-            root=pickle.load(open(path[0],'rb')) #unpickleできる場合
-            root.setview.setSavePath(path[0])
-        except Exception as e:
-            print(e)
+    path = QFileDialog.getSaveFileName(None, 'choose a save file','root.jh','JH file (*.jh)',options=QFileDialog.DontConfirmOverwrite)[0] #pyqt5ではtapleの一個めにpathが入っている
+    if not path=='': #when the user appointed a file
+        import os
+        if os.path.isfile(path): #when file exists
+            try:
+                root=pickle.load(open(path,'rb')) #when can unpickle
+                root.setview.setSavePath(path)
+            except Exception as e:
+                print(e)
+                try:
+                    depend_file=path+'_depend' #when can find a dependencies file
+                    dependencies=pickle.load(open(depend_file,'rb'))
+                    print('This file depends on the packages below. Check your environment meets these requirements.')
+                    print(dependencies)
+                except Exception as e2:
+                    print(e2)
+                    print('Cannot find the dependencies file. This file seems to depend on packages whick do not match your environment')
+                root=MyTreeWidget()
+                root.setview.setSavePath(path)
+        else: #when file does not exist
+            f=open(path,'wb')
             root=MyTreeWidget()
-            root.setview.setSavePath(path[0])
+            root.setview.setSavePath(path)
+            
         return root
 
 def geneMyTreeWidget(view):
@@ -44,6 +57,7 @@ class MyTreeWidget(QMainWindow):
         else:
             self.setview=view
         self.cur=self.setview.cur
+        self.root=self.setview.setmodel.mytree
         self.setview.setmodel.mytree.currentSignal.connect(self.setCurrent)
         
         self.initUI()
@@ -118,11 +132,15 @@ class MyTreeWidget(QMainWindow):
         if other: #self.filepath以外の保存先を指定する場合
             path = QFileDialog.getSaveFileName(None, 'chose save file','root.jh')[0]
             if not path=='': #pyqt5ではtapleの一個めにpathが入っている
+                depend_path=self.setview.filepath+'_depend'
                 pickle.dump(self,open(path,'wb'))
+                pickle.dump(self.get_dependencies(),open(depend_path,'wb'))
                 print('Saved To::')
                 print(path)
         else: #default 
             pickle.dump(self,open(self.setview.filepath,'wb'))
+            depend_path=self.setview.filepath+'_depend'
+            pickle.dump(self.get_dependencies(),open(depend_path,'wb'))
             print('Saved To::')
             print(self.setview.filepath)
             
@@ -133,6 +151,9 @@ class MyTreeWidget(QMainWindow):
         
     def setCurrent(self,mylist):
         self.cur=mylist[0]
+
+    def get_dependencies(self):
+        return self.root.get_dependencies()
         
 def geneMyTreeView(model):
     return MyTreeView(model=model)
@@ -272,7 +293,7 @@ class MyTreeModel(QStandardItemModel):
     green=QColor(148,194,115)
     def __init__(self,mytree):
         super().__init__(0,2)
-        self.mytree=mytree
+        self.mytree=mytree #the instance of MyTree.MyRootTree
         self.mytree.addSignal.connect(self.add_to_model)
         self.mytree.deleSignal.connect(self.dele_from_model)
         self.mytree.renameSignal.connect(self.rename_model)

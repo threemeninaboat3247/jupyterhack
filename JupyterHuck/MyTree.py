@@ -228,23 +228,28 @@ class MyTree(QObject):
                 mylist.append(child)
         return mylist
     
-    def loadFile(self):
-        path = QFileDialog.getOpenFileName(None, 'chose load file')[0] #pyqt5ではtapleの一個めにpathが入っている
-        if not path=='':
-            #1行だけ読み込んでみてstrが入っていればheaderとして使用してrootにもその名前で登録　そうでなければ'data0','data1',,,,としてrootに登録
-            reader=pd.read_csv(path,sep='\t',comment='#',header=None,chunksize=1)
-            data=reader.get_chunk(1)
-            ndata=None
-            if type(data.ix[0,0])==str:
-                ndata=pd.read_csv(path,sep='\t',comment='#')
-            else:
-                ndata=pd.read_csv(path,sep='\t',comment='#',header=None)
-                ndata.columns=['data'+str(x) for x in range(len(ndata.columns))]
-                #自分の下にフォルダを作ってそこにデータを追加
-            name=path.split('/')[-1]
-            self.add(MyTree(),label=name)
-            for index in ndata.columns:
-                self.__dict__[name].add(ndata[index],label=index)
+    def loadFiles(self):
+        def load_a_file(path):
+            if not path=='':
+                #1行だけ読み込んでみてstrが入っていればheaderとして使用してrootにもその名前で登録　そうでなければ'data0','data1',,,,としてrootに登録
+                reader=pd.read_csv(path,sep='\t',comment='#',header=None,chunksize=1)
+                data=reader.get_chunk(1)
+                ndata=None
+                if type(data.ix[0,0])==str:
+                    ndata=pd.read_csv(path,sep='\t',comment='#')
+                else:
+                    ndata=pd.read_csv(path,sep='\t',comment='#',header=None)
+                    ndata.columns=['data'+str(x) for x in range(len(ndata.columns))]
+                    #自分の下にフォルダを作ってそこにデータを追加
+                name=path.split('/')[-1]
+                childFolder=MyTree()
+                self.add(childFolder,label=name)
+                for index in ndata.columns:
+                    childFolder.add(ndata[index],label=index)           
+                    
+        paths = QFileDialog.getOpenFileNames(None, 'choose data files to load')[0]
+        for path in paths:
+            load_a_file(path)
             
     def transmitAddSignal(self,path,label,ref):
         #childのaddSignalのパスの先頭に自分の名前を付けくわえてemit
@@ -333,12 +338,15 @@ class MyRootTree(MyTree):
                 dependencies[m_name]=version
             except:
                 pass
+        #add matplotlib version info cause JupyterHuck implicitly uses it
+        dependencies['matplotlib']=get_distribution('matplotlib').version
         return dependencies
         
 if __name__=='__main__':
     import sys
     import numpy as np
     import pandas as pd
+    import sympy
     from JupyterHuck.MyGraph import MyGraphWindow
     app = QApplication([])
     g=MyGraphWindow()
@@ -346,12 +354,14 @@ if __name__=='__main__':
     s=pd.Series()
     a=1
     b=[1,2,3]
+    sym=sympy.Symbol('')
     mytree=MyRootTree()
     mytree.add(g)
     mytree.add(n)
     mytree.add(s)
     mytree.add(a)
     mytree.add(b)
+    mytree.add(sym)
     print(mytree)
     print(mytree.get_dependencies())
     sys.exit(app.exec_())

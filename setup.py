@@ -11,7 +11,7 @@ long_description = 'a data browser which has a tree structure'
 
 setup(
     name  = 'JupyterHuck',
-    version = '0.2',
+    version = '0.3',
     description = 'Visualizing data in a tree structure',
     long_description = long_description,
     license = 'MIT',
