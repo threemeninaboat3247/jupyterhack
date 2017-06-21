@@ -318,6 +318,13 @@ class MyRootTree(MyTree):
     def setCurrent(self,full_label):
         self.current=self.get_this(full_label)
         self.currentSignal.emit([self.current])
+        
+    def setCurrentDirectly(self,mytree):
+        if isinstance(mytree,MyTree):
+            self.current=mytree
+            self.currentSignal.emit([self.current])
+        else:
+            raise Exception('the current folder must be a MyTree')
 
     def get_this(self,full_label):
         #full_labelで指定されたrefを返す

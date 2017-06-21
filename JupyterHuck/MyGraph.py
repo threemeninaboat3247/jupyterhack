@@ -145,10 +145,26 @@ class MyPointer(QWidget):
         
 def geneMyGraph(fig,geometry,title):
     return MyGraphWindow(fig,geometry,title)
+    
+class MyColors():
+    '''Default color list for MyGraphWindow.'''
+    def __init__(self):
+        self.index=0
+        self.colors=['r','g','b','c','m','y','k']
+        self.length=len(self.colors)
+
+    def get_color(self):
+        color=self.colors[self.index]
+        self._incre_index()
+        return color
+
+    def _incre_index(self):
+        self.index=(self.index+1)%self.length
         
 class MyGraphWindow(QMainWindow):
     ALPHA_OTHER=0.2 #lasso非選択データの透明度
     PICKER=5 #lineをクリックしたときに取得できるための領域
+    mycolors=MyColors() #memory the color to use for self.plot method.
     def __init__(self,fig=None,geo=None,title='temp'):
         super().__init__()
         #mutableなオブジェクトをデフォルトに指定するとまずいのでこのように書く
@@ -225,26 +241,35 @@ class MyGraphWindow(QMainWindow):
         
     def plot(self,*args,**kwargs):
         #pickerはlineの選択に使うので必要
-        add_kwargs=self.addPickerToValue(kwargs)
+        kwargs=self._addPickerToValue(kwargs)
+        kwargs=self._addColorToValue(kwargs)
+
         try: #axが指定されていたらそのaxに対して描画を行う axが無いまたはaxオブジェクト以外が指定されていると引数にaxが無い状態で次
             ax=kwargs.pop('ax')
-            ax.plot(*args,**add_kwargs)
+            ax.plot(*args,**kwargs)
         except: #無ければself.figの最初のaxに描画　それもなければ新たにaxを追加して描画
             try:
                 ax=self.fig.get_axes()[0]
-                ax.plot(*args,**add_kwargs)
+                ax.plot(*args,**kwargs)
             except:
                 ax=self.fig.add_subplot(111)
-                ax.plot(*args,**add_kwargs)
+                ax.plot(*args,**kwargs)
         self.canvas.draw()
         
-    def addPickerToValue(self,kwargs):
+    def _addPickerToValue(self,kwargs):
         #pickerが無いとlassoで選択できないのでユーザーが引数にpickerを指定しなかった場合はpickerを加える
         if 'picker' in kwargs.keys():
             return kwargs
         else:
             kwargs['picker']=self.PICKER
             return kwargs
+            
+    def _addColorToValue(self,kwargs):
+        #If color is in the kwargs use it. Otherwise get a color from self.mycolors and use it.
+        if not 'color' in kwargs.keys():
+            color=self.mycolors.get_color()
+            kwargs['color']=color
+        return kwargs
                 
     def lassoTriggered(self):
         if self.lassoAction.isChecked()==True: #pointer Off lasso　On
@@ -384,6 +409,6 @@ if __name__=='__main__':
     x=np.arange(0,1000,0.1)
     y=np.random.rand(10000)
     z=np.random.rand(10000)+10
-    g.plot(x,y,marker='o',color='b',markersize=20)
-    g.plot(x,z,marker='o',color='r',picker=20)
+    g.plot(x,y,marker='o',markersize=20)
+    g.plot(x,z,marker='o',picker=20)
     sys.exit(app.exec_())

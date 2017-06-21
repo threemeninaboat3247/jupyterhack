@@ -155,6 +155,17 @@ class MyTreeWidget(QMainWindow):
     def get_dependencies(self):
         return self.root.get_dependencies()
         
+    def do_same(self,function):
+        '''move the self.cur to its children and execute the function respectively'''
+        child_folders=[child for child in self.cur.getChildren().values() if isinstance(child,MyTree.MyTree)]
+        for child in child_folders:
+            self.root.setCurrentDirectly(child)
+            function(self.cur)
+            
+    def set_current(self,mylist):
+        '''set the current folder by a full path. (Example):['root','folder1','folder1-1']'''
+        self.root.setCurrent(mylist)
+        
 def geneMyTreeView(model):
     return MyTreeView(model=model)
 
@@ -297,6 +308,7 @@ class MyTreeModel(QStandardItemModel):
         self.mytree.addSignal.connect(self.add_to_model)
         self.mytree.deleSignal.connect(self.dele_from_model)
         self.mytree.renameSignal.connect(self.rename_model)
+        self.mytree.currentSignal.connect(self.highlight_folder)
         
         self.setHeaderData( NAME,Qt.Horizontal, 'Name' )
         self.setHeaderData( TYPE,Qt.Horizontal, 'type' )
@@ -336,23 +348,33 @@ class MyTreeModel(QStandardItemModel):
             ref=self.getRef(item)
             if isinstance(ref,MyTree.MyTree):
                 #self.currentを更新してself.mytreeに反映　新旧のitemに通知
-                pre=[]
-                while len(self.current)>0:
-                    pre.append(self.current.pop())
-                for i in pre:
-                    self.dataChanged.emit(self.indexFromItem(i),self.indexFromItem(i))
-                self.current=self.getPaintRow(item)
-                
-                name=self.current[NAME]
-                full_label=self.ascend(name)
-                self.mytree.setCurrent(full_label)
-                
-                for i in self.current:
-                    self.dataChanged.emit(self.indexFromItem(i),self.indexFromItem(i))
-                    
+                self.mytree.setCurrentDirectly(ref)
+            
             elif isinstance(ref,int):
                 print(ref)
+                
+    def highlight_folder(self,mylist):
+        '''Slot for currentSignal of MyRootTree. mylist is a list only contains the new current folder'''
+        #dehighlighten the old current row
+        pre=[]
+        while len(self.current)>0:
+            pre.append(self.current.pop())
+        for i in pre:
+            try:
+                self.dataChanged.emit(self.indexFromItem(i),self.indexFromItem(i))
+            except:
+                print('current folder was deleted.')
+            
+        #get a new row to highligten
+        cur=mylist[0]
+        full_path=cur.ascend()
+        target=self.pathToItem(full_path)
+        self.current=self.getPaintRow(target)
         
+        #highlighten the row
+        for i in self.current:
+            self.dataChanged.emit(self.indexFromItem(i),self.indexFromItem(i))
+            
     def data(self, index, role =Qt.DisplayRole):
         #overriding method:indexで指定される要素に関する情報を返す
         if not index.isValid():
@@ -425,11 +447,11 @@ class MyTreeModel(QStandardItemModel):
     def getPaintRow(self,item):
         #カレントディレクトリとして色を変えて表示するitemのリストを返す
         if item.parent()==None: #rootフォルダの場合
-            return [self.containor.child(0,i) for i in range(3)]
+            return [self.containor.child(0,i) for i in range(self.containor.columnCount())]
         else:
             parent=item.parent()
             num=item.row()
-            return [parent.child(num,i) for i in range(3)]
+            return [parent.child(num,i) for i in range(parent.columnCount())]
           
     def convert(self,mytree):
         if not isinstance(mytree,MyTree.MyTree):
