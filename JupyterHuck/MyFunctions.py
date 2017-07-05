@@ -14,13 +14,10 @@ from JupyterHuck.MyGraph import MyGraphWindow
 ##############################################
 #differential
 ##############################################
-def linear_fit(x, a, b):
-    return a*x + b
 
-def least_square_df(xs,ys,number=2,default=0):
-    '''xs,ysをlistで与えるとその微分値をlist型で返す。fitができない点ではdefaultを微分値とする。　微分値のリストと微分不可のx,yのlistをタプルで返す'''
-    #xsとysの対応関係を保ったままｘｓの上り順にsortする
-    print('this may take a few minutes')
+def defferentiate(xs,ys,number=2):
+    '''Dfferentiate by linear regression.'''
+    import numpy as np
     xs=np.array(xs)
     ys=np.array(ys)
     array=np.c_[xs,ys]
@@ -29,42 +26,44 @@ def least_square_df(xs,ys,number=2,default=0):
     sort_xs=array[:,0]
     sort_ys=array[:,1]
     
-    df=default*np.ones(len(xs)) #default値で初期化
-    error_x=[] #サイズが分からないのでlist　でappendする
-    error_y=[]
+    def least_square(sort_xs,sort_ys):
+        #translate the coordinate system to avoid a cancellation of digits.
+        n=len(sort_xs)
+        xoffset=sort_xs[0]*np.ones(n)
+        yoffset=sort_ys[0]*np.ones(n)
+        sort_xs=sort_xs-xoffset
+        sort_ys=sort_ys-yoffset
+
+        x_ave=sort_xs.sum()/n
+        y_ave=sort_ys.sum()/n
+        xy_ave=np.dot(sort_xs,sort_ys)/n
+        xx_ave=np.dot(sort_xs,sort_xs)/n
+
+        a=(xy_ave-x_ave*y_ave)/(xx_ave-x_ave**2)
+        #b=y_ave-a*x_ave
+        #b=b+yoffset+a*xoffset #inverse to the original coordinate system
+        return a
+    
+    df=np.ones(len(sort_xs))
+    
     #左端number個の点は左側の点が不足するので処理を分ける
     for i in range(0,number):
         nearestx=sort_xs[0:i+number+1]
         nearesty=sort_ys[0:i+number+1]
-        try:
-            param, cov = curve_fit(linear_fit, nearestx,nearesty)
-            df[i]=param[0]
-        except:
-            error_x.append(sort_xs[i])
-            error_y.append(sort_ys[i])
+        df[i]=least_square(nearestx,nearesty)
             
     for i in range(number,len(sort_xs)-number):
         nearestx=sort_xs[i-number:i+number+1]
         nearesty=sort_ys[i-number:i+number+1]
-        try:
-            param, cov = curve_fit(linear_fit, nearestx,nearesty)
-            df[i]=param[0]
-        except:
-            error_x.append(sort_xs[i])
-            error_y.append(sort_ys[i])
+        df[i]=least_square(nearestx,nearesty)
         
     #右端number個の点は右側の点が不足するので処理を分ける
     for i in range(len(sort_xs)-number,len(sort_xs)):
         nearestx=sort_xs[i-number:]
         nearesty=sort_ys[i-number:]
-        try:
-            param, cov = curve_fit(linear_fit, nearestx,nearesty)
-            df[i]=param[0]
-        except:
-            error_x.append(sort_xs[i])
-            error_y.append(sort_ys[i])
+        df[i]=least_square(nearestx,nearesty)
     
-    return {'df':df,'sorted xs':sort_xs,'undifferentiable xs':error_x,'undifferentiable xs':error_y}
+    return {'df':df,'sorted_xs':sort_xs,'sorted_ys':sort_ys}
 
 ##########################################################
 #x,y方向にerrorが存在する場合の最小自乗法によるフィッティング関係
