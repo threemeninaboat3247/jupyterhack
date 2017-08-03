@@ -1,20 +1,18 @@
-# JupyterHuck
+# jupyterhack
 
-A data browser which has a tree structure.This browser also controls matplotlib graphs 
-embedded in PyQt5 windows.
+A data browser which has a tree structure. This browser also controls matplotlib graphs embedded in PyQt5 windows. It can pickle all the data added to a file. So, data to be added to this browser have to be able to be pickeled.
 
 ## Installation
 
-	pip install JupyterHuck
+	conda install -c threemeninaboat3247 jupyterhack
 	
 ## Usage
 
 ```python
 %gui qt ### necessary when using in Jupyter
-from JupyterHuck.MyView import getRoot
-from JupyterHuck.MyGraph import MyGraphWindow
+import jupyterhack as jh
 
-r=getRoot()
+r=jh.getRoot()
 
 a='This is a string'
 r.cur.add(a)
@@ -26,4 +24,4 @@ r.cur.add(graph)
 r.save()
 ```
 
-![](https://github.com/threemeninaboat3247/JupyterHuck/blob/master/JupyterHuck.png)
+![](https://github.com/threemeninaboat3247/jupyterhack/blob/master/jupyterhack.png)

@@ -10,14 +10,14 @@ import os
 long_description = 'a data browser which has a tree structure'
 
 setup(
-    name  = 'JupyterHuck',
+    name  = 'jupyterhack',
     version = '0.7',
     description = 'Visualizing data in a tree structure',
     long_description = long_description,
     license = 'MIT',
     author = 'Yuki Arai',
     author_email = 'threemeninaboat3247@gmail.com',
-    url = 'https://github.com/threemeninaboat3247/JupyterHuck',
+    url = 'https://github.com/threemeninaboat3247/jupyterhack',
     keywords = 'data browser',
     packages = find_packages(),
     install_requires = ['numpy','matplotlib','pandas'],

@@ -345,7 +345,7 @@ class MyRootTree(MyTree):
                 dependencies[m_name]=version
             except:
                 pass
-        #add matplotlib version info cause JupyterHuck implicitly uses it
+        #add matplotlib version info cause jupyterhack implicitly uses it
         dependencies['matplotlib']=get_distribution('matplotlib').version
         return dependencies
         
@@ -354,7 +354,7 @@ if __name__=='__main__':
     import numpy as np
     import pandas as pd
     import sympy
-    from JupyterHuck.MyGraph import MyGraphWindow
+    from jupyterhack.MyGraph import MyGraphWindow
     app = QApplication([])
     g=MyGraphWindow()
     n=np.array([1,2,3])

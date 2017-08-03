@@ -12,9 +12,9 @@ from PyQt5.QtWidgets import QFileDialog,QWidget,QPushButton,QSizePolicy,QHBoxLay
                             QTreeView,QAbstractItemView,QApplication,QMainWindow,QToolBar,QAction,QToolButton,QHeaderView,QTextEdit
 from PyQt5.QtGui import QColor,QStandardItem,QStandardItemModel,QFont
 
-import JupyterHuck.MyTree as MyTree
-from JupyterHuck.MyGraph import MyGraphWindow
-from JupyterHuck.Help import helpText
+import jupyterhack.MyTree as MyTree
+from jupyterhack.MyGraph import MyGraphWindow
+from jupyterhack.Help import helpText
 
 NAME=0
 TYPE=1
