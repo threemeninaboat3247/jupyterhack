@@ -15,8 +15,8 @@ from JupyterHuck.MyGraph import MyGraphWindow
 #differential
 ##############################################
 
-def defferentiate(xs,ys,number=2):
-    '''Dfferentiate by linear regression.'''
+def differentiate(xs,ys,number=2):
+    '''Neumerical diffferentiation by the linear regression.'''
     import numpy as np
     xs=np.array(xs)
     ys=np.array(ys)
