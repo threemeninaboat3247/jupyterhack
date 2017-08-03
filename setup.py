@@ -11,7 +11,7 @@ long_description = 'a data browser which has a tree structure'
 
 setup(
     name  = 'jupyterhack',
-    version = '0.7',
+    version = '0.0',
     description = 'Visualizing data in a tree structure',
     long_description = long_description,
     license = 'MIT',
