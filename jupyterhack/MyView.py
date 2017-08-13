@@ -70,14 +70,11 @@ class MyTreeWidget(QMainWindow):
         toolbar.addAction(helpAction)
         self.addToolBar(toolbar)
         style='''
-            QToolButton {background-color: rgb(55,62,75);}
-            QToolButton:hover {background-color: rgb(39,105,195)}
-            QToolButton:pressed {background-color: rgb(200,200,200)};
-            background-color:rgb(55,62,75);
+
+            background-color:rgb(230,230,230);
             border-color: gray;
-            color:rgb(255,255,255);
             '''
-        #self.setStyleSheet(style)
+        self.setStyleSheet(style)
         
         button_style='''
                     QPushButton {background-color: rgb(39,105,195);
@@ -297,11 +294,11 @@ def geneMyTreeModel(tree):
         
 class MyTreeModel(QStandardItemModel):
     deleSignal=pyqtSignal(list,str)
+    white=QColor(255,255,255)
     pink=QColor(197,133,217)
-    white=QColor(0,0,0)
-    blue=QColor(11,218,81)
+    red=QColor(255,0,0)
     black=QColor(0,0,0)
-    green=QColor(11,218,81)
+    green=QColor(10,210,10)
     def __init__(self,mytree):
         super().__init__(0,2)
         self.mytree=mytree #the instance of MyTree.MyRootTree
@@ -393,11 +390,11 @@ class MyTreeModel(QStandardItemModel):
             if item in self.current:
                 return self.white
             elif item.text()=='folder':
-                return self.blue
+                return self.red
             elif item.column()==1:
                 return self.green
             else:
-                return self.white
+                return self.black
         else:
             return None
         

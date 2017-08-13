@@ -1,3 +1,2 @@
-from jupyterhack.MyGraph import MyGraphWindow as GraphWindow
-from jupyterhack.MyView import getRoot
+from jupyterhack.MyGraph import MyGraphWindow as GraphWindowfrom jupyterhack.MyView import getRoot
 from jupyterhack.MyFunctions import differentiate
