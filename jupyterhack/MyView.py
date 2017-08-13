@@ -77,7 +77,7 @@ class MyTreeWidget(QMainWindow):
             border-color: gray;
             color:rgb(255,255,255);
             '''
-        self.setStyleSheet(style)
+        #self.setStyleSheet(style)
         
         button_style='''
                     QPushButton {background-color: rgb(39,105,195);
@@ -298,10 +298,10 @@ def geneMyTreeModel(tree):
 class MyTreeModel(QStandardItemModel):
     deleSignal=pyqtSignal(list,str)
     pink=QColor(197,133,217)
-    white=QColor(255,255,255)
-    blue=QColor(97,175,239)
+    white=QColor(0,0,0)
+    blue=QColor(11,218,81)
     black=QColor(0,0,0)
-    green=QColor(148,194,115)
+    green=QColor(11,218,81)
     def __init__(self,mytree):
         super().__init__(0,2)
         self.mytree=mytree #the instance of MyTree.MyRootTree
