@@ -22,7 +22,7 @@ setup(
     packages = find_packages(),
     install_requires = ['numpy','matplotlib','pandas'],
     classifiers = [
-      'Programming Language :: Python :: 3.*',
+      'Programming Language :: Python',
       'Intended Audience :: Science/Research',
       'License :: OSI Approved :: MIT License'
     ]
