@@ -70,6 +70,7 @@ class MyTreeWidget(QMainWindow):
         toolbar.addAction(helpAction)
         self.addToolBar(toolbar)
         style='''
+
             background-color:rgb(230,230,230);
             border-color: gray;
             '''
