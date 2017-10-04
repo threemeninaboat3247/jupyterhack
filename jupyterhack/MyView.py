@@ -73,7 +73,7 @@ class MyTreeWidget(QMainWindow):
             background-color:rgb(230,230,230);
             border-color: gray;
             '''
-        self.setStyleSheet(style)
+        #self.setStyleSheet(style)
         
         button_style='''
                     QPushButton {background-color: rgb(39,105,195);

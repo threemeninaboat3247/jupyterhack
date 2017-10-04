@@ -11,6 +11,8 @@ import pandas as pd
 from PyQt5.QtCore import pyqtSignal,QObject
 from PyQt5.QtWidgets import QApplication,QWidget,QFileDialog
 
+from jupyterhack.MyGraph import MyGraphWindow
+
 def transformMyTree(mytree,parent=None):
     #MyTreeをMyTreeRawに変換する pickleのため
     raw=MyTreeRaw(parent=parent,name=mytree.name)
@@ -173,6 +175,30 @@ class MyTree(QObject):
         if signal:
             self.deleSignal.emit([self.name],label)
         return target
+        
+    def plot(self,x,y,xlabel='X',ylabel='Y',title='No name'):
+        g=MyGraphWindow()
+        g.plot(x,y)
+        ax=g.fig.get_axes()[0]
+        ax.set_title(title)
+        g.setWindowTitle(title)
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel(ylabel)
+        
+        def try_add(graph,label):
+            self.add(graph,label)
+            
+        try:
+            try_add(g,title)
+        except:
+            suffix=0
+            while True:
+                try:
+                    try_add(g,title+str(suffix))
+                    break
+                except:
+                    suffix+=1
+        
         
     def rename(self,before,after,signal=True):
         if (not before==after) and (not after in self.getChildren().keys()): #beforeとafterが違って afterが子供にいない時
